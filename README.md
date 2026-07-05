@@ -9,6 +9,13 @@
 
 适合备考 IELTS Writing、想要贴近真实机考节奏、又不想被云服务和订阅捆绑的人。
 
+## 主题预览
+
+<p align="center">
+  <a href="docs/screenshots/dark.png"><img src="docs/screenshots/dark.png" alt="深色主题" width="46%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); border: 1px solid rgba(127,127,127,0.25);"></a>
+  <a href="docs/screenshots/light.png"><img src="docs/screenshots/light.png" alt="浅色主题" width="46%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); border: 1px solid rgba(127,127,127,0.25);"></a>
+</p>
+
 ## 功能
 
 - **左图右文工作台** —— 单张题目图支持截图粘贴（`⌘/Ctrl + V`）和文件上传，可随时替换而不影响草稿。
