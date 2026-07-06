@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const AUTO_SAVE_DELAY = 1800;
+const IMAGE_OVERLAY_DISMISS_DELAY_MS = 2000;
 
 /**
  * 创建前端兜底会话，避免接口未返回前组件访问空值。
@@ -260,12 +261,14 @@ export default function App() {
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [modalImageSource, setModalImageSource] = useState("");
   const [timerEndNotice, setTimerEndNotice] = useState(false);
+  const [isImageOverlayVisible, setIsImageOverlayVisible] = useState(false);
 
   const fileInputRef = useRef(null);
   const saveTimerRef = useRef(/** @type {ReturnType<typeof setTimeout> | null} */ (null));
   const sessionRef = useRef(session);
   const isHydratedRef = useRef(false);
   const localImageObjectUrlRef = useRef("");
+  const imageOverlayTimerRef = useRef(/** @type {ReturnType<typeof setTimeout> | null} */ (null));
 
   const wordCount = useMemo(() => countWords(session.draftText), [session.draftText]);
   const saveStatusLabel = useMemo(() => resolveSaveStatusLabel(saveState), [saveState]);
@@ -291,6 +294,15 @@ export default function App() {
     return () => {
       if (localImageObjectUrlRef.current) {
         URL.revokeObjectURL(localImageObjectUrlRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (imageOverlayTimerRef.current) {
+        clearTimeout(imageOverlayTimerRef.current);
+        imageOverlayTimerRef.current = null;
       }
     };
   }, []);
@@ -556,6 +568,11 @@ export default function App() {
     formData.append("sessionId", sessionRef.current.sessionId);
 
     setIsImageUploading(true);
+    setIsImageOverlayVisible(true);
+    if (imageOverlayTimerRef.current) {
+      clearTimeout(imageOverlayTimerRef.current);
+      imageOverlayTimerRef.current = null;
+    }
 
     if (localImageObjectUrlRef.current) {
       URL.revokeObjectURL(localImageObjectUrlRef.current);
@@ -584,12 +601,19 @@ export default function App() {
         }),
         "immediate"
       );
+
+      // 上传成功后给浮层留 ~2s 反馈时间，再淡出避免遮挡图片
+      imageOverlayTimerRef.current = setTimeout(() => {
+        imageOverlayTimerRef.current = null;
+        setIsImageOverlayVisible(false);
+      }, IMAGE_OVERLAY_DISMISS_DELAY_MS);
     } catch (error) {
       console.error(error);
       setSaveState({
         status: "error",
         savedAt: null
       });
+      setIsImageOverlayVisible(false);
     } finally {
       setIsImageUploading(false);
     }
@@ -979,7 +1003,10 @@ export default function App() {
             {hasImage ? (
               <>
                 <img className="prompt-image" src={currentImageSource} alt="题目图片预览" />
-                <div className="image-overlay">
+                <div
+                  className={`image-overlay ${isImageOverlayVisible ? "is-visible" : "is-hidden"}`}
+                  aria-hidden={!isImageOverlayVisible}
+                >
                   <div className="image-overlay-copy">
                     <strong>{isImageUploading ? "正在写入题目图…" : "题目图已加载"}</strong>
                     <span>

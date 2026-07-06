@@ -526,6 +526,22 @@ button {
   );
   border: 1px solid color-mix(in srgb, var(--panel-border) 120%, transparent);
   backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 280ms ease, transform 280ms ease;
+  pointer-events: none;
+}
+
+.image-overlay.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.image-overlay.is-hidden {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
 }
 
 .image-overlay-copy {
