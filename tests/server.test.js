@@ -62,6 +62,70 @@ describe("session api", () => {
     expect(storedSession.promptSource).toBe("剑桥雅思 18 Test 2 Task 1");
   });
 
+  it("persists promptAddition end-to-end through save and read", async () => {
+    const payload = {
+      session: {
+        sessionId: "session_test_addition",
+        draftText: "",
+        imagePath: "",
+        promptSource: "剑桥雅思 18 Test 2 Task 1",
+        promptAddition: "话题：在线教育；图表类型：柱状图；时间跨度：2015-2020",
+        timerMode: 20,
+        remainingSeconds: 1200,
+        timerStatus: "idle",
+        wordCountVisible: true,
+        theme: "dark",
+        startedAt: null
+      }
+    };
+
+    const saveResponse = await request(app).put("/api/session/current").send(payload);
+    expect(saveResponse.statusCode).toBe(200);
+    expect(saveResponse.body.session.promptAddition).toBe(payload.session.promptAddition);
+
+    const readResponse = await request(app).get("/api/session/current");
+    expect(readResponse.statusCode).toBe(200);
+    expect(readResponse.body.session.promptAddition).toBe(payload.session.promptAddition);
+  });
+
+  it("falls back to an empty string for archived sessions that pre-date promptAddition", async () => {
+    const legacyPath = path.join(sandboxRoot, "data", "sessions", "session_legacy.json");
+    await fs.mkdir(path.dirname(legacyPath), { recursive: true });
+
+    const endedAt = new Date().toISOString();
+    await fs.writeFile(
+      legacyPath,
+      JSON.stringify({
+        sessionId: "session_legacy",
+        draftText: "Legacy archived draft",
+        imagePath: "",
+        promptSource: "legacy source",
+        timerMode: 20,
+        remainingSeconds: 0,
+        timerStatus: "idle",
+        wordCountVisible: true,
+        theme: "dark",
+        startedAt: null,
+        endedAt,
+        wordCount: 3,
+        createdAt: endedAt
+      }),
+      "utf8"
+    );
+
+    const listResponse = await request(app).get("/api/sessions");
+    expect(listResponse.statusCode).toBe(200);
+    const [legacy] = listResponse.body.sessions.filter(
+      (item) => item.sessionId === "session_legacy"
+    );
+    expect(legacy).toBeDefined();
+    expect(legacy.promptAddition).toBe("");
+
+    const detailResponse = await request(app).get("/api/sessions/session_legacy");
+    expect(detailResponse.statusCode).toBe(200);
+    expect(detailResponse.body.session.promptAddition).toBe("");
+  });
+
   it("deletes an archived session and cleans up an unreferenced image", async () => {
     await fs.mkdir(path.dirname(archivedSessionPath), { recursive: true });
     await fs.mkdir(path.dirname(imageFilePath), { recursive: true });

@@ -30,6 +30,7 @@ export function createEmptySession() {
     draftText: "",
     imagePath: "",
     promptSource: "",
+    promptAddition: "",
     timerMode: 20,
     remainingSeconds: 20 * 60,
     timerStatus: "idle",
@@ -66,6 +67,7 @@ export function sanitizeSessionPayload(inputSession = {}) {
     draftText: typeof inputSession.draftText === "string" ? inputSession.draftText : "",
     imagePath: typeof inputSession.imagePath === "string" ? inputSession.imagePath : "",
     promptSource: typeof inputSession.promptSource === "string" ? inputSession.promptSource : "",
+    promptAddition: typeof inputSession.promptAddition === "string" ? inputSession.promptAddition : "",
     timerMode: normalizedTimerMode,
     remainingSeconds: normalizedRemainingSeconds,
     timerStatus: normalizedTimerStatus,
@@ -136,6 +138,7 @@ export function buildArchivedSession(currentSession) {
     draftText: currentSession.draftText,
     imagePath: currentSession.imagePath,
     promptSource: currentSession.promptSource,
+    promptAddition: currentSession.promptAddition,
     timerMode: currentSession.timerMode,
     remainingSeconds: currentSession.remainingSeconds,
     timerStatus: currentSession.timerStatus,
@@ -206,7 +209,8 @@ export async function listArchivedSessions() {
     .filter(Boolean)
     .map((sessionRecord) => ({
       ...sessionRecord,
-      promptSource: typeof sessionRecord.promptSource === "string" ? sessionRecord.promptSource : ""
+      promptSource: typeof sessionRecord.promptSource === "string" ? sessionRecord.promptSource : "",
+      promptAddition: typeof sessionRecord.promptAddition === "string" ? sessionRecord.promptAddition : ""
     }))
     .sort((left, right) => new Date(right.endedAt).getTime() - new Date(left.endedAt).getTime());
 }
@@ -231,7 +235,8 @@ export async function getArchivedSessionById(sessionId) {
 
     return {
       ...archivedSession,
-      promptSource: typeof archivedSession.promptSource === "string" ? archivedSession.promptSource : ""
+      promptSource: typeof archivedSession.promptSource === "string" ? archivedSession.promptSource : "",
+      promptAddition: typeof archivedSession.promptAddition === "string" ? archivedSession.promptAddition : ""
     };
   } catch (error) {
     await moveBrokenFileToRecovery(archivePath);
@@ -349,6 +354,7 @@ export function countWords(text) {
  * @property {string} draftText
  * @property {string} imagePath
  * @property {string} promptSource
+ * @property {string} promptAddition
  * @property {20 | 40} timerMode
  * @property {number} remainingSeconds
  * @property {"idle" | "running" | "paused"} timerStatus
@@ -364,6 +370,7 @@ export function countWords(text) {
  * @property {string} draftText
  * @property {string} imagePath
  * @property {string} promptSource
+ * @property {string} promptAddition
  * @property {20 | 40} timerMode
  * @property {number} remainingSeconds
  * @property {"idle" | "running" | "paused"} timerStatus
