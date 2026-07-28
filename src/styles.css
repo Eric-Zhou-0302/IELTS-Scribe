@@ -300,6 +300,28 @@ button {
   color: transparent;
 }
 
+.prompt-source-input--multi {
+  height: auto;
+  min-height: 132px;
+  padding: 26px 6px 10px;
+  line-height: 1.55;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.prompt-source-field--multi .prompt-source-label {
+  top: 22px;
+}
+
+.prompt-source-field--multi
+  .prompt-source-input--multi:focus
+  ~ .prompt-source-label,
+.prompt-source-field--multi
+  .prompt-source-input--multi:not(:placeholder-shown)
+  ~ .prompt-source-label {
+  top: -2px;
+}
+
 .prompt-source-label {
   color: var(--text-secondary);
   font-size: 17px;
@@ -752,6 +774,11 @@ button {
 .history-source {
   font-size: 13px;
   color: var(--accent-strong);
+}
+
+.history-addition {
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .history-item-top,

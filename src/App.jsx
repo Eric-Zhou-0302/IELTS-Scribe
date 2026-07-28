@@ -14,6 +14,7 @@ export function createFallbackSession() {
     draftText: "",
     imagePath: "",
     promptSource: "",
+    promptAddition: "",
     timerMode: 20,
     remainingSeconds: 20 * 60,
     timerStatus: "idle",
@@ -164,6 +165,16 @@ export function resolvePromptSourceLabel(promptSource) {
 }
 
 /**
+ * 生成题目补充展示文案；空值给出兜底提示。
+ *
+ * @param {string | null | undefined} promptAddition 题目补充
+ * @returns {string}
+ */
+export function resolvePromptAdditionLabel(promptAddition) {
+  return promptAddition?.trim() ? promptAddition.trim() : "无题目补充";
+}
+
+/**
  * 判断当前练习是否已经产生了未归档的有效内容。
  *
  * @param {import("../server/services/sessionService.js").SessionRecord} session 当前会话
@@ -175,6 +186,10 @@ export function hasUnarchivedProgress(session) {
   }
 
   if (session.promptSource.trim()) {
+    return true;
+  }
+
+  if (session.promptAddition?.trim()) {
     return true;
   }
 
@@ -656,6 +671,24 @@ export default function App() {
   }
 
   /**
+   * 处理题目补充输入变化。
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} event 输入事件
+   */
+  function handlePromptAdditionChange(event) {
+    const nextPromptAddition = event.target.value;
+
+    updateSession(
+      (previousSession) => ({
+        ...previousSession,
+        promptAddition: nextPromptAddition,
+        updatedAt: new Date().toISOString()
+      }),
+      "debounced"
+    );
+  }
+
+  /**
    * 切换计时模式并重置剩余时间。
    *
    * @param {20 | 40} nextMode 新模式
@@ -999,6 +1032,24 @@ export default function App() {
             </div>
           </div>
 
+          <div className="prompt-source-field prompt-source-field--multi">
+            <div className="prompt-source-group">
+              <textarea
+                id="prompt-addition"
+                className="prompt-source-input prompt-source-input--multi"
+                rows={5}
+                placeholder=" "
+                value={session.promptAddition}
+                onChange={handlePromptAdditionChange}
+              />
+              <span className="prompt-source-highlight" aria-hidden="true"></span>
+              <span className="prompt-source-bar" aria-hidden="true"></span>
+              <label className="prompt-source-label" htmlFor="prompt-addition">
+                题目补充
+              </label>
+            </div>
+          </div>
+
           <div className={`image-dropzone ${hasImage ? "has-image" : ""}`}>
             {hasImage ? (
               <>
@@ -1155,6 +1206,9 @@ export default function App() {
                     <span>{item.imagePath ? "含题目图" : "无题目图"}</span>
                   </div>
                   <span className="history-source">{resolvePromptSourceLabel(item.promptSource)}</span>
+                  {item.promptAddition?.trim() ? (
+                    <span className="history-source history-addition">{resolvePromptAdditionLabel(item.promptAddition)}</span>
+                  ) : null}
                   <span>{buildDraftExcerpt(item.draftText)}</span>
                 </button>
               ))
@@ -1188,6 +1242,7 @@ export default function App() {
 
                 <div className="history-meta">
                   <span>题目来源：{resolvePromptSourceLabel(selectedArchive.promptSource)}</span>
+                  <span>题目补充：{resolvePromptAdditionLabel(selectedArchive.promptAddition)}</span>
                   <span>字数：{selectedArchive.wordCount}</span>
                   <span>剩余时间：{formatTime(selectedArchive.remainingSeconds)}</span>
                 </div>
