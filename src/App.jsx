@@ -1206,9 +1206,9 @@ export default function App() {
                     <span>{item.imagePath ? "含题目图" : "无题目图"}</span>
                   </div>
                   <span className="history-source">{resolvePromptSourceLabel(item.promptSource)}</span>
-                  {item.promptAddition?.trim() ? (
-                    <span className="history-source history-addition">{resolvePromptAdditionLabel(item.promptAddition)}</span>
-                  ) : null}
+                  <span className="history-source history-addition">
+                    题目补充：{resolvePromptAdditionLabel(item.promptAddition)}
+                  </span>
                   <span>{buildDraftExcerpt(item.draftText)}</span>
                 </button>
               ))
